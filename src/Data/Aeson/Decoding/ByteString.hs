@@ -1,5 +1,4 @@
 {-# LANGUAGE BangPatterns        #-}
-{-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE ViewPatterns        #-}
 {-# OPTIONS_GHC -O2 #-}
@@ -16,6 +15,7 @@ import           Data.Word                    (Word8)
 
 import qualified Data.Aeson.Key               as Key
 import qualified Data.ByteString              as BS
+import qualified Data.ByteString.Char8        as BSC
 import qualified Data.ByteString.Unsafe       as BS.Unsafe
 import qualified Data.Scientific              as Sci
 import qualified Data.Word8.Patterns          as W8
@@ -49,11 +49,11 @@ bsToTokens bs0 = goT bs0 id where
     tokenCase w                _   wbs k
         | W8.DIGIT_0 <= w, w <= W8.DIGIT_9    = scanNumberLiteral (\n bs' -> TkNumber n (k bs')) tkErr wbs
     tokenCase W8.LOWER_N       bs  _   k
-        | Just bs1 <- stripPrefix "ull" 3 bs  = TkLit LitNull (k bs1)
+        | Just bs1 <- stripPrefix (BSC.pack "ull") 3 bs  = TkLit LitNull (k bs1)
     tokenCase W8.LOWER_T       bs  _   k
-        | Just bs1 <- stripPrefix "rue" 3 bs  = TkLit LitTrue (k bs1)
+        | Just bs1 <- stripPrefix (BSC.pack "rue") 3 bs  = TkLit LitTrue (k bs1)
     tokenCase W8.LOWER_F       bs  _   k
-        | Just bs1 <- stripPrefix "alse" 4 bs = TkLit LitFalse (k bs1)
+        | Just bs1 <- stripPrefix (BSC.pack "alse") 4 bs = TkLit LitFalse (k bs1)
     tokenCase _                _   wbs _      = tkErr $ "Unexpected " ++ showBeginning wbs ++ ", expecting JSON value"
 
     -- Array
